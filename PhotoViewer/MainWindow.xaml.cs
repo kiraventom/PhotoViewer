@@ -16,16 +16,11 @@ namespace PhotoViewer
             InitializeComponent();
             model = new Model(this.MainImageVw, this.MockBt);
 
-            this.Loaded += this.MainWindow_Loaded;
-            OpenFileBt.Click += this.OpenFileBt_Click;
-            PreviousImageBt.Click += this.PreviousImageBt_Click;
-            PreviousImageBt.MouseEnter += this.ChangeImageBt_MouseEnter;
-            PreviousImageBt.MouseLeave += this.ImageBt_MouseLeave;
-            NextImageBt.Click += this.NextImageBt_Click;
-            NextImageBt.MouseEnter += this.ChangeImageBt_MouseEnter;
-            NextImageBt.MouseLeave += this.ImageBt_MouseLeave;
-            TurnLeftBt.Click += this.TurnLeftBt_Click;
-            TurnRightBt.Click += this.TurnRightBt_Click;
+            this.OpenFileBt.Click += this.OpenFileBt_Click;
+            this.PreviousImageBt.Click += this.PreviousImageBt_Click;
+            this.NextImageBt.Click += this.NextImageBt_Click;
+            this.TurnLeftBt.Click += this.TurnLeftBt_Click;
+            this.TurnRightBt.Click += this.TurnRightBt_Click;
             this.SizeChanged += this.MainWindow_SizeChanged;
             this.ZoomSl.ValueChanged += this.ZoomSl_ValueChanged;
         }
@@ -54,22 +49,6 @@ namespace PhotoViewer
         private void TurnRightBt_Click(object sender, RoutedEventArgs e)
         {
             model.RotateImage(+1);
-        }
-
-        private void ChangeImageBt_MouseEnter(object sender, MouseEventArgs e)
-        {
-            (sender as Button).Foreground = Brushes.Black;
-        }
-
-        private void ImageBt_MouseLeave(object sender, MouseEventArgs e)
-        {
-            (sender as Button).Foreground = Brushes.Transparent;
-        }
-
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            NextImageBt.Foreground = Brushes.Transparent;
-            PreviousImageBt.Foreground = Brushes.Transparent;
         }
 
         private void NextImageBt_Click(object sender, RoutedEventArgs e)

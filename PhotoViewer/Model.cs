@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Printing;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -198,9 +197,7 @@ namespace PhotoViewer
             // resize frame according to original image size
             double widthRatio = origImgSize.Width / controlSize.Width;
             double heightRatio = origImgSize.Height / controlSize.Height;
-            double mod = widthRatio > heightRatio
-                ? widthRatio
-                : heightRatio;
+            double mod = widthRatio > heightRatio ? widthRatio : heightRatio;
             var adjustedControlSize = new Size(controlSize.Width * mod, controlSize.Height * mod);
 
             // locate img on control
@@ -212,29 +209,12 @@ namespace PhotoViewer
             double frameHeight = adjustedControlSize.Height / zoomModificator;
             double frameX = (adjustedControlSize.Width - frameWidth) / 2;
             double frameY = (adjustedControlSize.Height - frameHeight) / 2;
-
-            int sourceRectWidth;
-            int sourceRectHeight;
-            int sourceRectX;
-            int sourceRectY;
-
+               
             // crop the source rectangle to borders of img to get actual rectangle to crop
-            if (origImgSize.Width < frameWidth)
-                sourceRectWidth = (int)origImgSize.Width;
-            else
-                sourceRectWidth = (int)frameWidth;
-            if (origImgSize.Height < frameHeight)
-                sourceRectHeight = (int)origImgSize.Height;
-            else
-                sourceRectHeight = (int)frameHeight;
-            if (frameX > imgX)
-                sourceRectX = (int)(frameX - imgX);
-            else
-                sourceRectX = 0;
-            if (frameY > imgY)
-                sourceRectY = (int)(frameY - imgY);
-            else
-                sourceRectY = 0;
+            int sourceRectWidth = origImgSize.Width < frameWidth ? (int)origImgSize.Width : (int)frameWidth;
+            int sourceRectHeight = origImgSize.Height < frameHeight ? (int)origImgSize.Height : (int)frameHeight;
+            int sourceRectX = frameX > imgX ? (int)(frameX - imgX) : 0;
+            int sourceRectY = frameY > imgY ? (int)(frameY - imgY) : 0;
 
             return new Int32Rect(sourceRectX, sourceRectY, sourceRectWidth, sourceRectHeight);
         }

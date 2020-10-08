@@ -75,11 +75,13 @@ namespace PhotoViewer
         private void NextImageBt_Click(object sender, RoutedEventArgs e)
         {
             model.SelectImageByOffset(+1);
+            ResetZoomSlider();
         }
 
         private void PreviousImageBt_Click(object sender, RoutedEventArgs e)
         {
             model.SelectImageByOffset(-1);
+            ResetZoomSlider();
         }
 
         private void OpenFileBt_Click(object sender, RoutedEventArgs e)
@@ -92,6 +94,13 @@ namespace PhotoViewer
             {
                 model.OpenImageFromPath(ofd.FileName);
             }
+        }
+
+        private void ResetZoomSlider()
+        {
+            this.ZoomSl.ValueChanged -= this.ZoomSl_ValueChanged;
+            this.ZoomSl.Value = this.ZoomSl.Minimum;
+            this.ZoomSl.ValueChanged += this.ZoomSl_ValueChanged;
         }
     }
 }

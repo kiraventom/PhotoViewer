@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PhotoViewer"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" WindowStartupLocation="CenterScreen">
+        Title="PhotoViewer" Height="450" Width="800" WindowStartupLocation="CenterScreen">
     <Window.Resources>
         <SolidColorBrush x:Key="Button.MouseOver.Background" Color="Transparent"/>
         <SolidColorBrush x:Key="Button.MouseOver.Border" Color="Transparent"/>
@@ -52,7 +52,7 @@
             <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
         <Button x:Name="OpenFileBt" Content="Open" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="0"/>
-        <Button x:Name="MockBt" Content="Mock" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" Panel.ZIndex="0" Opacity="0.01"/>
+        <Button x:Name="MockBt" Content="Mock" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" Panel.ZIndex="0" Opacity="0"/>
         <Image x:Name="MainImageVw" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" Panel.ZIndex="0"/>
         <Button x:Name="PreviousImageBt" 
             Template="{DynamicResource CustomButton}" 
@@ -65,7 +65,7 @@
             Grid.Row="1" 
             Grid.Column="0" 
             Panel.ZIndex="1"/>
-        <Slider x:Name="ZoomSl" Grid.Row="2" Grid.Column="2" Maximum="5" Minimum="1"/>
+        <Slider x:Name="ZoomSl" Grid.Row="2" Grid.Column="2" Maximum="20" Minimum="1"/>
         <Button x:Name="NextImageBt" 
             Template="{DynamicResource CustomButton}" 
             Content="&gt;" 

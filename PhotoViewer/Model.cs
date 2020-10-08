@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Printing;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -74,7 +75,7 @@ namespace PhotoViewer
 
         public void OpenImageFromPath(string fileName)
         {
-            var currentDir = new DirectoryInfo(System.IO.Path.GetDirectoryName(fileName));
+            var currentDir = new DirectoryInfo(Path.GetDirectoryName(fileName));
             _imagePaths = currentDir.EnumerateFiles()
                 .Where(fi => _extensions.Contains(fi.Extension, StringComparer.OrdinalIgnoreCase))
                 .Select(fi => fi.FullName)
@@ -143,8 +144,8 @@ namespace PhotoViewer
             bmpImg = new BitmapImage();
             bmpImg.BeginInit();
             bmpImg.UriSource = uri;
-            (var sourceRect, var renderSize) = Zoom(new Size(originalSize.Width, originalSize.Height), controlSize, _currentZoom);
-            Size adjustedSize = AdjustImageSizeToControlSize(new Size((int)sourceRect.Width, (int)sourceRect.Height), controlSize);
+            var sourceRect = Zoom(new Size(originalSize.Width, originalSize.Height), controlSize, _currentZoom);
+            Size adjustedSize = AdjustImageSizeToControlSize(new Size(sourceRect.Width, sourceRect.Height), controlSize);
             bmpImg.SourceRect = sourceRect;
             bmpImg.Rotation = _currentRotation;
             bmpImg.DecodePixelWidth = (int)adjustedSize.Width;
@@ -192,7 +193,7 @@ namespace PhotoViewer
             return new Size(newWidth, newHeight);
         }
 
-        private static (Int32Rect sourceRect, Size renderSize) Zoom(Size origImgSize, Size controlSize, double zoomModificator)
+        private static Int32Rect Zoom(Size origImgSize, Size controlSize, double zoomModificator)
         {
             // resize frame according to original image size
             double widthRatio = origImgSize.Width / controlSize.Width;
@@ -235,7 +236,7 @@ namespace PhotoViewer
             else
                 sourceRectY = 0;
 
-            return (new Int32Rect(sourceRectX, sourceRectY, sourceRectWidth, sourceRectHeight), new Size(frameWidth, frameHeight));
+            return new Int32Rect(sourceRectX, sourceRectY, sourceRectWidth, sourceRectHeight);
         }
 
         #endregion

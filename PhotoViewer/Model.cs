@@ -140,12 +140,14 @@ namespace PhotoViewer
             BitmapImage bmpImg = new BitmapImage(uri); // cuz we need image size to adjust it
             Size originalSize = new Size(bmpImg.PixelWidth, bmpImg.PixelHeight);
             Size controlSize = _mockBt.RenderSize;
+            if (_currentRotation == Rotation.Rotate90 || _currentRotation == Rotation.Rotate270)
+                controlSize = new Size(controlSize.Height, controlSize.Width);
 
             bmpImg = new BitmapImage();
             bmpImg.BeginInit();
             bmpImg.UriSource = uri;
             bmpImg.Rotation = _currentRotation;
-            var sourceRect = Zoom(new Size(originalSize.Width, originalSize.Height), controlSize, _currentZoom, _currentRotation);
+            var sourceRect = Zoom(new Size(originalSize.Width, originalSize.Height), controlSize, _currentZoom);
             bmpImg.SourceRect = sourceRect;
             bmpImg.CacheOption = BitmapCacheOption.OnLoad;
             Size adjustedSize = AdjustImageSizeToControlSize(new Size(sourceRect.Width, sourceRect.Height), controlSize);
@@ -194,11 +196,8 @@ namespace PhotoViewer
             return new Size(newWidth, newHeight);
         }
 
-        private static Int32Rect Zoom(Size origImgSize, Size controlSize, double zoomModificator, Rotation rotation)
+        private static Int32Rect Zoom(Size origImgSize, Size controlSize, double zoomModificator)
         {
-            if (rotation == Rotation.Rotate90 || rotation == Rotation.Rotate270) 
-                controlSize = new Size(controlSize.Height, controlSize.Width);
-
             // resize frame according to original image size
             double widthRatio = origImgSize.Width / controlSize.Width;
             double heightRatio = origImgSize.Height / controlSize.Height;

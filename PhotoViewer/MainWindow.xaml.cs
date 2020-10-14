@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System.Threading;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -20,6 +21,9 @@ namespace PhotoViewer
             this.TurnRightBt.Click += this.TurnRightBt_Click;
             this.SizeChanged += this.MainWindow_SizeChanged;
             this.MainImageVw.MouseWheel += this.MainImageVw_MouseWheel;
+            this.MainImageVw.MouseLeftButtonDown += this.MainImageVw_MouseLeftButtonDown;
+            this.MainImageVw.MouseMove += this.MainImageVw_MouseMove;
+            this.MainImageVw.MouseLeftButtonUp += this.MainImageVw_MouseLeftButtonUp;
         }
 
         private readonly Model model = null;
@@ -37,6 +41,29 @@ namespace PhotoViewer
                 _currentZoom = value;
                 model.SetZoom(_currentZoom);
             }
+        }
+
+        bool moveImageToggle = false;
+        Point lastPosition = new Point(-1, -1);
+
+        private void MainImageVw_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) => moveImageToggle = true;
+
+        private void MainImageVw_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) => moveImageToggle = false;
+
+        private void MainImageVw_MouseMove(object sender, MouseEventArgs e)
+        {
+            var currentPosition = e.GetPosition(MockBt);
+            if (moveImageToggle)
+            {
+                if (lastPosition != new Point(-1, -1))
+                {
+                    var offset = Point.Subtract(lastPosition, currentPosition);
+                    lastPosition = currentPosition;
+                    if (offset.Length >= 1)
+                        model.MoveZoom(offset);
+                }
+            }
+            lastPosition = currentPosition;
         }
 
         private void MainImageVw_MouseWheel(object sender, MouseWheelEventArgs e)

@@ -26,7 +26,7 @@
             Content="&lt;" 
             Grid.Row="2" 
             Grid.Column="0" />
-        <Slider x:Name="ZoomSl" Grid.Row="2" Grid.Column="2" Maximum="20" Minimum="1"/>
+        <Slider x:Name="ZoomSl" Grid.Row="2" Grid.Column="2" Maximum="10" Minimum="1"/>
         <Button x:Name="NextImageBt" 
             Content="&gt;" 
             Grid.Row="2" 

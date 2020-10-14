@@ -35,7 +35,7 @@ namespace PhotoViewer
                 if (value < minZoom || value > maxZoom)
                     return;
                 _currentZoom = value;
-                model.ChangeZoom(_currentZoom);
+                model.SetZoom(_currentZoom);
             }
         }
 

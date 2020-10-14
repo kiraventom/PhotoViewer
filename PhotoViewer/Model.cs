@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Markup.Localizer;
 using System.Windows.Media.Imaging;
 
 namespace PhotoViewer
@@ -89,7 +90,7 @@ namespace PhotoViewer
             LoadImage();
         }
 
-        public void ChangeZoom(double modificator)
+        public void SetZoom(double modificator)
         {
             _currentZoom = modificator;
             LoadImage();
@@ -130,32 +131,43 @@ namespace PhotoViewer
 
         private void LoadImage()
         {
+            WaitingToRedrawImage = false;
             if (_imagePaths is null || _currentIndex == -1)
                 return;
 
-            WaitingToRedrawImage = false;
-            _imageViewer.Source = null;
-
             var uri = new Uri(_imagePaths[_currentIndex]);
-            BitmapImage bmpImg = new BitmapImage(uri); // cuz we need image size to adjust it
+            BitmapImage bmpImg = new BitmapImage(uri);
             Size originalSize = new Size(bmpImg.PixelWidth, bmpImg.PixelHeight);
+            if (!originalSize.IsRenderable())
+                return;
+
             Size controlSize = _mockBt.RenderSize;
+            if (!controlSize.IsRenderable())
+                return;
+
             if (_currentRotation == Rotation.Rotate90 || _currentRotation == Rotation.Rotate270)
                 controlSize = new Size(controlSize.Height, controlSize.Width);
+
+            var sourceRect = Zoom(originalSize, controlSize, _currentZoom);
+            if (!sourceRect.IsRenderable())
+                return;
+
+            Size adjustedSize = AdjustImageSizeToControlSize(new Size(sourceRect.Width, sourceRect.Height), controlSize);
+            if (!adjustedSize.IsRenderable())
+                return;
 
             bmpImg = new BitmapImage();
             bmpImg.BeginInit();
             bmpImg.UriSource = uri;
             bmpImg.Rotation = _currentRotation;
-            var sourceRect = Zoom(new Size(originalSize.Width, originalSize.Height), controlSize, _currentZoom);
             bmpImg.SourceRect = sourceRect;
             bmpImg.CacheOption = BitmapCacheOption.OnLoad;
-            Size adjustedSize = AdjustImageSizeToControlSize(new Size(sourceRect.Width, sourceRect.Height), controlSize);
             bmpImg.DecodePixelWidth = (int)adjustedSize.Width;
             bmpImg.DecodePixelHeight = (int)adjustedSize.Height;
             bmpImg.EndInit();
             bmpImg.Freeze();
 
+            _imageViewer.Source = null;
             _imageViewer.Source = bmpImg;
         }
 

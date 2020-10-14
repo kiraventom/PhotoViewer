@@ -1,10 +1,7 @@
 ﻿using Microsoft.Win32;
-using System.IO;
+using System.Threading;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 
 namespace PhotoViewer
@@ -22,14 +19,32 @@ namespace PhotoViewer
             this.TurnLeftBt.Click += this.TurnLeftBt_Click;
             this.TurnRightBt.Click += this.TurnRightBt_Click;
             this.SizeChanged += this.MainWindow_SizeChanged;
-            this.ZoomSl.ValueChanged += this.ZoomSl_ValueChanged;
+            this.MainImageVw.MouseWheel += this.MainImageVw_MouseWheel;
         }
 
-        readonly Model model = null;
+        private readonly Model model = null;
+        const int minZoom = 1;
+        const int maxZoom = 10;
 
-        private void ZoomSl_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private double _currentZoom;
+        private double CurrentZoom
         {
-            model.ChangeZoom(this.ZoomSl.Value);
+            get => _currentZoom;
+            set
+            {
+                if (value < minZoom || value > maxZoom)
+                    return;
+                _currentZoom = value;
+                model.ChangeZoom(_currentZoom);
+            }
+        }
+
+        private void MainImageVw_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (e.Delta > 0)
+                CurrentZoom += 1;
+            else
+                CurrentZoom -= 1;
         }
 
         private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -54,13 +69,13 @@ namespace PhotoViewer
         private void NextImageBt_Click(object sender, RoutedEventArgs e)
         {
             model.SelectImageByOffset(+1);
-            ResetZoomSlider();
+            CurrentZoom = minZoom;
         }
 
         private void PreviousImageBt_Click(object sender, RoutedEventArgs e)
         {
             model.SelectImageByOffset(-1);
-            ResetZoomSlider();
+            CurrentZoom = minZoom;
         }
 
         private void OpenFileBt_Click(object sender, RoutedEventArgs e)
@@ -73,13 +88,6 @@ namespace PhotoViewer
             {
                 model.OpenImageFromPath(ofd.FileName);
             }
-        }
-
-        private void ResetZoomSlider()
-        {
-            this.ZoomSl.ValueChanged -= this.ZoomSl_ValueChanged;
-            this.ZoomSl.Value = this.ZoomSl.Minimum;
-            this.ZoomSl.ValueChanged += this.ZoomSl_ValueChanged;
         }
     }
 }

@@ -196,7 +196,7 @@ namespace PhotoViewer
 
         private static Int32Rect Zoom(Size origImgSize, Size controlSize, double zoomModificator, Rotation rotation)
         {
-            if (rotation == Rotation.Rotate90 || rotation == Rotation.Rotate270)
+            if (rotation == Rotation.Rotate90 || rotation == Rotation.Rotate270) 
                 controlSize = new Size(controlSize.Height, controlSize.Width);
 
             // resize frame according to original image size

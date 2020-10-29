@@ -44,23 +44,68 @@ namespace PhotoViewer
         private Rotation _currentRotation = Rotation.Rotate0;
         private string _filter;
         private double _currentZoom = 1;
+        private double CurrentZoom
+        {
+            get => _currentZoom;
+            set
+            {
+                _optimizedBitmap = null;
+                _currentZoom = value;
+                if (_currentZoom == 1)
+                {
+                    _currentFrameOffset = new Vector(0, 0);
+                }
+            }
+        }
         private Vector _currentFrameOffset;
-        private Size _currentImageSize;
         private Uri _currentImageUri => CurrentIndex != -1 && _imagePaths != null ? new Uri(_imagePaths[CurrentIndex]) : null;
         private int _currentIndex = -1;
-        private int CurrentIndex
+        private int CurrentIndex 
         {
             get => _currentIndex;
             set
             {
                 _currentIndex = value;
-
-                if (_currentImageUri is null)
-                    return;
-
-                BitmapImage bmpImg = new BitmapImage(_currentImageUri);
-                _currentImageSize = new Size(bmpImg.PixelWidth, bmpImg.PixelHeight);
+                Reset();
             }
+        }
+
+        private BitmapImage _rawBitmap;
+        private BitmapImage _optimizedBitmap;
+        private BitmapImage GetOptimizedBitmap(Size controlSize)
+        {
+            if (_optimizedBitmap is null)
+            {
+                if (_currentImageUri is null)
+                    return null;
+
+                if (_rawBitmap is null)
+                    _rawBitmap = new BitmapImage(_currentImageUri);
+
+                var currentBitmapSize = new Size(_rawBitmap.PixelWidth, _rawBitmap.PixelHeight);
+                if (!currentBitmapSize.IsRenderable())
+                    return null;
+
+                if (!controlSize.IsRenderable())
+                    return null;
+
+                Size adjustedSize = AdjustImageSizeToControlSize(currentBitmapSize, controlSize);
+                if (!adjustedSize.IsRenderable())
+                    return null;
+
+                var bmpImage = new BitmapImage();
+                bmpImage.BeginInit();
+                bmpImage.UriSource = _currentImageUri;
+                bmpImage.CacheOption = BitmapCacheOption.OnLoad;
+                bmpImage.DecodePixelWidth = (int)adjustedSize.Width;
+                bmpImage.DecodePixelHeight = (int)adjustedSize.Height;
+                bmpImage.EndInit();
+                bmpImage.Freeze();
+
+                _optimizedBitmap = bmpImage;
+            }
+            
+            return _optimizedBitmap;
         }
 
         private static readonly IReadOnlyCollection<string> _extensions = new List<string> { ".png", ".jpg" }.AsReadOnly();
@@ -84,7 +129,7 @@ namespace PhotoViewer
 
         public void SetZoom(double modificator)
         {
-            _currentZoom = modificator;
+            CurrentZoom = modificator;
             UpdateImage();
         }
 
@@ -122,9 +167,6 @@ namespace PhotoViewer
             if (_currentImageUri is null)
                 return;
 
-            _currentRotation = Rotation.Rotate0;
-            _currentZoom = 1;
-            _currentFrameOffset = new Vector(0, 0);
             var requestedIndex = GetIndexByOffset(CurrentIndex, offset, _imagePaths.Count);
             if (CurrentIndex != requestedIndex)
             {
@@ -137,42 +179,61 @@ namespace PhotoViewer
         {
             WaitingToRedrawImage = false;
 
-            Size originalSize = _currentImageSize;
-            if (!originalSize.IsRenderable())
+            Size controlSize = new Size(_mockBt.RenderSize.Width * CurrentZoom, _mockBt.RenderSize.Height * CurrentZoom);
+            if (!controlSize.IsRenderable())
                 return;
 
-            Size controlSize = _mockBt.RenderSize;
-            if (!controlSize.IsRenderable())
+            BitmapImage bitmap;
+            if (CurrentZoom != 1 && _rawBitmap != null && (controlSize.Width > _rawBitmap.Width || controlSize.Height > _rawBitmap.Height))
+            {
+                bitmap = _rawBitmap;
+                controlSize.Width = _mockBt.RenderSize.Width;
+                controlSize.Height = _mockBt.RenderSize.Height;
+            }
+            else
+            {
+                bitmap = GetOptimizedBitmap(controlSize);
+            }
+            
+            if (bitmap is null)
                 return;
 
             if (_currentRotation == Rotation.Rotate90 || _currentRotation == Rotation.Rotate270)
                 controlSize = new Size(controlSize.Height, controlSize.Width);
 
             Int32Rect sourceRect;
-            if (_currentZoom != 1)
-                sourceRect = Zoom(originalSize, controlSize, _currentZoom, ref _currentFrameOffset);
+            if (CurrentZoom != 1)
+            {
+                var size = new Size(bitmap.PixelWidth, bitmap.PixelHeight);
+                sourceRect = Zoom(size, controlSize, CurrentZoom, ref _currentFrameOffset);
+            }
             else
-                sourceRect = new Int32Rect(0, 0, (int)originalSize.Width, (int)originalSize.Height);
+                sourceRect = Int32Rect.Empty;
 
-            if (!sourceRect.IsRenderable())
-                return;
+            var croppedImage = new CroppedBitmap();
+            croppedImage.BeginInit();
+            croppedImage.Source = bitmap;
+            croppedImage.SourceRect = sourceRect;
+            croppedImage.EndInit();
+            croppedImage.Freeze();
 
-            Size adjustedSize = AdjustImageSizeToControlSize(new Size(sourceRect.Width, sourceRect.Height), controlSize);
-            if (!adjustedSize.IsRenderable())
-                return;
+            var bmpImage = new BitmapImage();
+            bmpImage.BeginInit();
+            bmpImage.StreamSource = new MemoryStream(croppedImage.GetBytes());
+            bmpImage.Rotation = _currentRotation;
+            bmpImage.CacheOption = BitmapCacheOption.OnLoad;
+            bmpImage.EndInit();
+            bmpImage.Freeze();
 
-            var bmpImg = new BitmapImage();
-            bmpImg.BeginInit();
-            bmpImg.UriSource = _currentImageUri;
-            bmpImg.Rotation = _currentRotation;
-            bmpImg.SourceRect = sourceRect;
-            bmpImg.CacheOption = BitmapCacheOption.OnLoad;
-            bmpImg.DecodePixelWidth = (int)adjustedSize.Width;
-            bmpImg.DecodePixelHeight = (int)adjustedSize.Height;
-            bmpImg.EndInit();
-            bmpImg.Freeze();
+            _imageViewer.Source = bmpImage;
+        }
 
-            _imageViewer.Source = bmpImg;
+        private void Reset()
+        {
+            _rawBitmap = null;
+            CurrentZoom = 1;
+            _currentRotation = Rotation.Rotate0;
+            _currentFrameOffset = new Vector(0, 0);
         }
     }
 }

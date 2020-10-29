@@ -1,8 +1,11 @@
 ﻿using Microsoft.Win32;
+using System;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Navigation;
 using System.Windows.Threading;
 
 namespace PhotoViewer
@@ -24,6 +27,7 @@ namespace PhotoViewer
             this.MainImageVw.MouseLeftButtonDown += this.MainImageVw_MouseLeftButtonDown;
             this.MainImageVw.MouseMove += this.MainImageVw_MouseMove;
             this.MainImageVw.MouseLeftButtonUp += this.MainImageVw_MouseLeftButtonUp;
+            this.Loaded += this.MainWindow_Loaded;
         }
 
         private readonly Model model = null;
@@ -60,7 +64,10 @@ namespace PhotoViewer
                     var offset = Point.Subtract(lastPosition, currentPosition);
                     lastPosition = currentPosition;
                     if (offset.Length >= 1)
+                    {
                         model.MoveZoom(offset);
+                    }
+                        
                 }
             }
             lastPosition = currentPosition;
@@ -73,6 +80,9 @@ namespace PhotoViewer
             else
                 CurrentZoom -= 1;
         }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e) => _ = 1;
+            //RenderOptions.SetBitmapScalingMode(this.MainImageVw, BitmapScalingMode.NearestNeighbor);
 
         private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {

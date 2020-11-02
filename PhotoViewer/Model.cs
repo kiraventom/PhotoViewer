@@ -18,25 +18,7 @@ namespace PhotoViewer
         }
 
         public bool WaitingToRedrawImage { get; set; } = false;
-        public string Filter
-        {
-            get
-            {
-                if (_filter is null)
-                {
-                    StringBuilder sb = new StringBuilder("Image Files|");
-                    foreach (var ext in _extensions)
-                    {
-                        sb.Append('*');
-                        sb.Append(ext);
-                        sb.Append(';');
-                    }
-                    _filter = sb.ToString();
-                }
-
-                return _filter;
-            }
-        }
+        public string Filter => _filter ??= ConstructFilter(_allowedExtensions);
 
         private readonly Image _imageViewer;
         private readonly Button _mockBt;
@@ -57,8 +39,9 @@ namespace PhotoViewer
                 }
             }
         }
+
         private Vector _currentFrameOffset;
-        private Uri _currentImageUri => CurrentIndex != -1 && _imagePaths != null ? new Uri(_imagePaths[CurrentIndex]) : null;
+        private Uri CurrentImageUri => CurrentIndex != -1 && _imagePaths != null ? new Uri(_imagePaths[CurrentIndex]) : null;
         private int _currentIndex = -1;
         private int CurrentIndex 
         {
@@ -76,11 +59,11 @@ namespace PhotoViewer
         {
             if (_optimizedBitmap is null)
             {
-                if (_currentImageUri is null)
+                if (CurrentImageUri is null)
                     return null;
 
                 if (_rawBitmap is null)
-                    _rawBitmap = new BitmapImage(_currentImageUri);
+                    _rawBitmap = new BitmapImage(CurrentImageUri);
 
                 var currentBitmapSize = new Size(_rawBitmap.PixelWidth, _rawBitmap.PixelHeight);
                 if (!currentBitmapSize.IsRenderable())
@@ -95,7 +78,7 @@ namespace PhotoViewer
 
                 var bmpImage = new BitmapImage();
                 bmpImage.BeginInit();
-                bmpImage.UriSource = _currentImageUri;
+                bmpImage.UriSource = CurrentImageUri;
                 bmpImage.CacheOption = BitmapCacheOption.OnLoad;
                 bmpImage.DecodePixelWidth = (int)adjustedSize.Width;
                 bmpImage.DecodePixelHeight = (int)adjustedSize.Height;
@@ -108,13 +91,13 @@ namespace PhotoViewer
             return _optimizedBitmap;
         }
 
-        private static readonly IReadOnlyCollection<string> _extensions = new List<string> { ".png", ".jpg" }.AsReadOnly();
+        private static readonly IReadOnlyCollection<string> _allowedExtensions = new List<string> { ".png", ".jpg" }.AsReadOnly();
 
         public void OpenImageFromPath(string fileName)
         {
             var currentDir = new DirectoryInfo(Path.GetDirectoryName(fileName));
             _imagePaths = currentDir.EnumerateFiles()
-                .Where(fi => _extensions.Contains(fi.Extension, StringComparer.OrdinalIgnoreCase))
+                .Where(fi => _allowedExtensions.Contains(fi.Extension, StringComparer.OrdinalIgnoreCase))
                 .Select(fi => fi.FullName)
                 .ToList();
             var currentImage = _imagePaths.Single(path => path.Equals(fileName, StringComparison.OrdinalIgnoreCase));
@@ -124,7 +107,7 @@ namespace PhotoViewer
 
         public void ResizeImage()
         {
-            UpdateImage();
+            UpdateImage(); 
         }
 
         public void SetZoom(double modificator)
@@ -164,7 +147,7 @@ namespace PhotoViewer
 
         public void SelectImageByOffset(int offset)
         {
-            if (_currentImageUri is null)
+            if (CurrentImageUri is null)
                 return;
 
             var requestedIndex = GetIndexByOffset(CurrentIndex, offset, _imagePaths.Count);

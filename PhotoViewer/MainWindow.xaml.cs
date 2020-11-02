@@ -1,11 +1,6 @@
 ﻿using Microsoft.Win32;
-using System;
-using System.Threading;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Navigation;
 using System.Windows.Threading;
 
 namespace PhotoViewer
@@ -35,16 +30,12 @@ namespace PhotoViewer
         const int maxZoom = 10;
 
         private double _currentZoom;
-        private double CurrentZoom
+        private void SetCurrentZoom(double value)
         {
-            get => _currentZoom;
-            set
-            {
-                if (value < minZoom || value > maxZoom)
-                    return;
-                _currentZoom = value;
-                model.SetZoom(_currentZoom);
-            }
+            if (value < minZoom || value > maxZoom)
+                return;
+            _currentZoom = value;
+            model.SetZoom(_currentZoom);
         }
 
         bool moveImageToggle = false;
@@ -76,9 +67,9 @@ namespace PhotoViewer
         private void MainImageVw_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             if (e.Delta > 0)
-                CurrentZoom += 1;
+                SetCurrentZoom(_currentZoom + 1);
             else
-                CurrentZoom -= 1;
+                SetCurrentZoom(_currentZoom - 1);
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e) => _ = 1;
@@ -106,13 +97,13 @@ namespace PhotoViewer
         private void NextImageBt_Click(object sender, RoutedEventArgs e)
         {
             model.SelectImageByOffset(+1);
-            CurrentZoom = minZoom;
+            SetCurrentZoom(minZoom);
         }
 
         private void PreviousImageBt_Click(object sender, RoutedEventArgs e)
         {
             model.SelectImageByOffset(-1);
-            CurrentZoom = minZoom;
+            SetCurrentZoom(minZoom);
         }
 
         private void OpenFileBt_Click(object sender, RoutedEventArgs e)

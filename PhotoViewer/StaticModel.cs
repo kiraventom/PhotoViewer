@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Text;
 using System.Windows;
 
@@ -8,6 +7,18 @@ namespace PhotoViewer
 {
     partial class Model
     {
+        private static string ConstructFilter(IEnumerable<string> allowedExtensions)
+        {
+            StringBuilder sb = new StringBuilder("Image Files|");
+            foreach (var ext in allowedExtensions)
+            {
+                sb.Append('*');
+                sb.Append(ext);
+                sb.Append(';');
+            }
+            return sb.ToString();
+        }
+
         private static int GetIndexByOffset(int currentIndex, int offset, int collectionSize)
         {
             if (Math.Abs(offset) >= collectionSize)
